@@ -237,13 +237,13 @@
         }
 
         /* =========================
-           NEW: Signature watermark
+           Signature watermark
         ========================= */
         .signature {
             position: fixed;
             right: 22px;
             bottom: 22px;
-            z-index: 900;             /* below controls(1000), but captured by screenshot */
+            z-index: 900;
             pointer-events: none;
             color: rgba(255, 255, 255, 0.55);
             font-size: 12px;
@@ -271,6 +271,9 @@
             letter-spacing: 1.2px;
         }
 
+        /* =========================
+           ✅ Mobile fix: no overlap
+        ========================= */
         @media (max-width: 768px) {
             .branch { border-left-width: 30px; border-right-width: 30px; border-bottom-width: 45px; }
             .branch:nth-child(2) { border-left-width: 30px; border-right-width: 30px; }
@@ -278,11 +281,24 @@
             .branch:nth-child(4) { border-left-width: 60px; border-right-width: 60px; }
             .branch:nth-child(5) { border-left-width: 75px; border-right-width: 75px; }
 
-            .controls { bottom: 20px; right: 20px; }
-            .control-btn { width: 45px; height: 45px; font-size: 18px; }
+            /* ✅ controls 改成底部置中 */
+            .controls {
+                right: auto;
+                left: 50%;
+                bottom: 18px;
+                transform: translateX(-50%);
+                gap: 12px;
+            }
 
-            .signature { right: 14px; bottom: 14px; }
+            /* ✅ 按鈕縮小一點 */
+            .control-btn { width: 44px; height: 44px; font-size: 18px; }
+
+            /* ✅ 署名抬高避開 controls */
+            .signature { right: 12px; bottom: 78px; }
             .sig-pill { padding: 7px 10px; }
+
+            /* ✅ instruction 再往上，避免被 controls 蓋住 */
+            .instruction { bottom: 92px; font-size: 13px; }
         }
     </style>
 </head>
@@ -300,16 +316,14 @@
         </div>
     </div>
 
-    <div class="instruction">點擊畫面任意處點亮聖誕樹<br><span style="letter-spacing:2px;opacity:.7">按 S 可修改署名</span></div>
+    <div class="instruction">點擊畫面任意處點亮聖誕樹<br><span style="letter-spacing:2px;opacity:.7">按 S 可修改署名（手機可長按署名）</span></div>
 
     <div class="controls">
         <button class="control-btn" id="musicBtn" title="音樂開關">🎵</button>
         <button class="control-btn" id="captureBtn" title="截圖分享">📸</button>
-        <!-- NEW: signature edit -->
         <button class="control-btn" id="signBtn" title="設定署名">✍️</button>
     </div>
 
-    <!-- NEW: watermark element -->
     <div class="signature" id="signature">
         <div class="sig-pill" id="sigText">Created by You</div>
         <div class="sig-hint" id="sigDate"></div>
@@ -329,7 +343,7 @@
         const counter = document.getElementById('counter');
 
         // =========================
-        // NEW: Signature / watermark
+        // Signature / watermark
         // =========================
         const SIGN_KEY = "xmas_signature_v1";
         const sigTextEl = document.getElementById('sigText');
@@ -337,7 +351,6 @@
         const signBtn = document.getElementById('signBtn');
 
         function formatDate(d){
-            // YYYY-MM-DD
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth()+1).padStart(2,'0');
             const dd = String(d.getDate()).padStart(2,'0');
@@ -358,7 +371,6 @@
             applySignature(next);
         }
 
-        // init signature + date
         applySignature(localStorage.getItem(SIGN_KEY) || "Created by You");
         sigDateEl.textContent = formatDate(new Date());
 
@@ -367,8 +379,20 @@
             if (e.key.toLowerCase() === 's') askSignature();
         });
 
+        // ✅ 手機友善：長按署名可改名
+        const signatureEl = document.getElementById('signature');
+        let pressTimer = null;
+
+        signatureEl.addEventListener('touchstart', () => {
+            pressTimer = setTimeout(() => { askSignature(); }, 450);
+        }, { passive: true });
+
+        signatureEl.addEventListener('touchend', () => {
+            if (pressTimer) clearTimeout(pressTimer);
+        });
+
         // =========================
-        // Music (keep yours)
+        // Music
         // =========================
         let isPlaying = false;
         const musicBtn = document.getElementById('musicBtn');
@@ -414,7 +438,12 @@
             currentNoteIndex = (currentNoteIndex + 1) % melodyNotes.length;
         }
 
-        musicBtn.addEventListener('click', () => {
+        musicBtn.addEventListener('click', async () => {
+            // iOS 需要使用者互動後才能 resume
+            if (audioContext.state === 'suspended') {
+                try { await audioContext.resume(); } catch(e) {}
+            }
+
             isPlaying = !isPlaying;
 
             if (isPlaying) {
@@ -430,7 +459,7 @@
         });
 
         // =========================
-        // Screenshot (keep yours)
+        // Screenshot
         // =========================
         const captureBtn = document.getElementById('captureBtn');
         const flash = document.getElementById('flash');
@@ -444,8 +473,6 @@
             const instruction = document.querySelector('.instruction');
             controls.style.display = 'none';
             instruction.style.display = 'none';
-
-            // NOTE: signature stays visible so it will be included in screenshot
 
             await new Promise(resolve => setTimeout(resolve, 600));
 
