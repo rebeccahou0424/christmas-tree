@@ -1130,7 +1130,7 @@ function renderStarRow(){
     // 🎄 其他聖誕小物：用方形 viewBox，縮圖不會被壓扁/太小
     else if (state.topType === 'holiday') vb = '0 0 520 520';
     const thumb = (s.id === 'none')
-      ? `<span class="emoji" aria-hidden="true">🚫</span>`
+      ? `<span class="emoji" aria-hidden="true"></span>`
       : `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${s.svg}</svg>`;
     return `<div class="chip icon ${active}" data-star="${s.id}" title="${s.name}">
       <span class="thumb">${thumb}</span>
@@ -1596,7 +1596,7 @@ decorRow.addEventListener('pointerdown', (e)=>{ if(e.pointerType==='touch') e.pr
     function resizeSnow(){
       SW = snowCanvas.width = window.innerWidth;
       SH = snowCanvas.height = window.innerHeight;
-      const n = Math.min(180, Math.floor(SW / 6));
+      const n = Math.min(4000, Math.floor(SW / 0.9));
       flakes = Array.from({length:n}, ()=>({
         x: Math.random()*SW,
         y: Math.random()*SH,
