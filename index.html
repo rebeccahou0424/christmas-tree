@@ -236,13 +236,53 @@
       background: rgba(10,14,39,.85);
       backdrop-filter: blur(12px);
       border-top: 1px solid rgba(255,255,255,.1);
-      padding: 12px;
+      padding: 10px 12px 12px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      max-height: 300px;
+      gap: 10px;
+      max-height: 320px;
+
+      /* smooth expand/collapse */
+      transition: max-height .25s ease, transform .25s ease, padding .25s ease;
+      touch-action: pan-y;
     }
+    .controls.collapsed{
+      max-height: 76px;
+      padding: 8px 12px 10px;
+    }
+    .controls.collapsed #options{ display:none; }
+
+    .panel-handle{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      user-select:none;
+      -webkit-user-select:none;
+      cursor: pointer;
+      padding: 6px 0 0;
+    }
+    .grabber{
+      width: 44px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.24);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+    }
+    .panel-toggle{
+      width: 32px;
+      height: 28px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+    .panel-toggle svg{ width: 18px; height: 18px; display:block; }
+    .controls.collapsed .panel-toggle svg{ transform: rotate(180deg); }
 
     .control-buttons{
       display: flex;
@@ -357,8 +397,8 @@
 /* ===== Icon chips (show SVG instead of text) ===== */
 .chip.icon{
   padding: 0;
-  width: 100px;   /* ✅ 整體再放大一點 */
-  height: 100px;
+  width: 108px;   /* ✅ 整體再放大一點 */
+  height: 108px;
   border-radius: 22px;
   display: grid;
   place-items: center;
@@ -397,35 +437,34 @@
 }
 /* 只有「星星」分類才需要放大，因為星星 SVG 的 viewBox 留白較多 */
 #starRow[data-toptype="star"] .chip.icon{
-  width: 110px;
-  height: 110px;
+  width: 122px;
+  height: 122px;
   overflow: hidden; /* ✅ 避免放大後的星星跑到隔壁，點到會選到下一個 */
   border-radius: 24px;
 }
 #starRow[data-toptype="star"] .chip.icon .thumb{
-  width: 104px;
-  height: 104px;
+  width: 116px;
+  height: 116px;
 }
 #starRow[data-toptype="star"] .chip.icon .thumb svg{
-  width: 104px;
-  height: 104px;
+  width: 116px;
+  height: 116px;
   transform: scale(1.35);
   transform-origin: 50% 50%;
 }
 /* 只有「其他/天使」分類：天使在選項縮圖偏小，單獨放大 */
 #starRow[data-toptype="holiday"] .chip.icon{
-  width: 108px;
-  height: 108px;
+  width: 120px;
+  height: 120px;
 }
 #starRow[data-toptype="holiday"] .chip.icon .thumb{
-  width: 102px;
-  height: 102px;
+  width: 112px;
+  height: 112px;
 }
 #starRow[data-toptype="holiday"] .chip.icon .thumb svg{
-  width: 102px;
-  height: 102px;
-  transform: scale(1.35);   /* ⭐ 關鍵 */
-  transform-origin: 50% 50%;
+  width: 112px;
+  height: 112px;
+  transform: none;
 }
 #starRow[data-toptype="holiday"] .chip.icon,
 #starRow[data-toptype="holiday"] .chip.icon .thumb{
@@ -686,14 +725,14 @@
 
 .top-icons {
   display: flex;
-  gap: 18px;
-  padding: 6px 2px 12px;
+  gap: 14px;
+  padding: 4px 2px 8px;
   align-items: center;
 
   /* ✅ 讓樹梢第二排可以自動換行，不再只能往右滑 */
   flex-wrap: wrap;
   justify-content: center;
-  row-gap: 12px;
+  row-gap: 8px;
   overflow-x: hidden;
 }
 
@@ -736,7 +775,7 @@
 #decorRow, #starRow{
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px 10px;
+  gap: 10px 10px;
   align-items: center;
   justify-items: center;
   width: 100%;
@@ -775,7 +814,16 @@
   </div>
 
   <div class="controls">
-    <div class="control-buttons">
+    
+    <div class="panel-handle" id="panelHandle" aria-label="Toggle panel">
+      <div class="grabber"></div>
+      <button class="panel-toggle" id="panelToggle" type="button" aria-label="Toggle">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+<div class="control-buttons">
       <button class="control-btn" id="musicBtn" title="音樂開關"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 18V6l12-2v12"/><path fill="currentColor" d="M7.5 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path fill="currentColor" d="M19.5 18.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg></button>
       <button class="control-btn" id="captureBtn" title="截圖分享"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 7h4l2-2h4l2 2h4v13H4z"/><circle cx="12" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
       <button class="control-btn" id="signBtn" title="設定署名"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20h9"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M16.5 3.5l4 4L8 20l-4 1 1-4z"/></svg></button>
@@ -1259,22 +1307,75 @@ decorRow.addEventListener('pointerdown', (e)=>{ if(e.pointerType==='touch') e.pr
       if(e.pointerType === 'touch') e.preventDefault();
       handlePlace(e.clientX, e.clientY);
     }, { passive: false });
-
-    // Clear button
+    // Clear button (tap once to delete immediately)
     const clearBtn = document.getElementById('clearBtn');
-    let clearTimer = null;
-    clearBtn.addEventListener('touchstart', (e)=>{
-      e.preventDefault();
-      clearTimer = setTimeout(()=>{
-        clearAll();
-        clearBtn.style.transform = 'scale(1.1)';
-        setTimeout(()=>clearBtn.style.transform='', 100);
-      }, 500);
-    }, {passive:false});
-    clearBtn.addEventListener('touchend', ()=>{
-      if(clearTimer) clearTimeout(clearTimer);
+    clearBtn.addEventListener('pointerdown', (e)=>{
+      // prevent page scroll / ghost clicks on mobile
+      if(e.pointerType === 'touch') e.preventDefault();
+      clearAll();
+      clearBtn.style.transform = 'scale(0.92)';
+      setTimeout(()=>clearBtn.style.transform='', 90);
+    }, { passive:false });
+
+    /* =========================
+       Bottom panel: collapse / expand (avoid blocking the tree)
+    ========================= */
+    const controlsEl = document.querySelector('.controls');
+    const panelHandle = document.getElementById('panelHandle');
+    const panelToggle = document.getElementById('panelToggle');
+    const containerEl = document.querySelector('.container');
+
+    function syncBottomSpace(){
+      const h = controlsEl.getBoundingClientRect().height;
+      // leave a tiny buffer so the tree never touches the panel
+      containerEl.style.paddingBottom = Math.max(16, h + 12) + 'px';
+      // signature follows the panel
+      const sig = document.getElementById('signature');
+      if(sig){
+        sig.style.bottom = (h + 10) + 'px';
+      }
+    }
+
+    function setCollapsed(collapsed){
+      controlsEl.classList.toggle('collapsed', collapsed);
+      syncBottomSpace();
+    }
+
+    // default: expanded on desktop, collapsed on small screens a bit
+    setTimeout(()=>{ 
+      if(window.innerWidth < 480) setCollapsed(false);
+      else syncBottomSpace();
+    }, 0);
+
+    function togglePanel(){
+      setCollapsed(!controlsEl.classList.contains('collapsed'));
+    }
+
+    panelHandle.addEventListener('click', (e)=>{
+      // ignore clicks on actual buttons inside handle
+      if(e.target === panelToggle || panelToggle.contains(e.target)) return;
+      togglePanel();
     });
-    clearBtn.addEventListener('click', clearAll);
+    panelToggle.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      togglePanel();
+    });
+
+    // swipe down to collapse / swipe up to expand (mobile)
+    let startY = null;
+    panelHandle.addEventListener('pointerdown', (e)=>{
+      startY = e.clientY;
+    });
+    panelHandle.addEventListener('pointerup', (e)=>{
+      if(startY == null) return;
+      const dy = e.clientY - startY;
+      startY = null;
+      if(Math.abs(dy) < 18) return;
+      if(dy > 0) setCollapsed(true);  // swipe down
+      else setCollapsed(false);       // swipe up
+    });
+
+    window.addEventListener('resize', syncBottomSpace);
 
     document.addEventListener('keydown', (e)=>{
       if(e.code === 'Space') clearAll();
@@ -1432,7 +1533,6 @@ decorRow.addEventListener('pointerdown', (e)=>{ if(e.pointerType==='touch') e.pr
     const captureBtn = document.getElementById('captureBtn');
     const flash = document.getElementById('flash');
     const notification = document.getElementById('notification');
-    const controlsEl = document.querySelector('.controls');
     const instructionEl = document.querySelector('.instruction');
 
     captureBtn.addEventListener('click', async ()=>{
@@ -1496,7 +1596,7 @@ decorRow.addEventListener('pointerdown', (e)=>{ if(e.pointerType==='touch') e.pr
     function resizeSnow(){
       SW = snowCanvas.width = window.innerWidth;
       SH = snowCanvas.height = window.innerHeight;
-      const n = Math.min(1000, Math.floor(SW / 1));
+      const n = Math.min(180, Math.floor(SW / 6));
       flakes = Array.from({length:n}, ()=>({
         x: Math.random()*SW,
         y: Math.random()*SH,
